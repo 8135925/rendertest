@@ -8,6 +8,13 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // 注册 pgx 驱动
 )
 
+// Note 一条实验数据，对应数据库 public.notes 表
+type Note struct {
+	ID        string    `json:"id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // PgStore 基于 PostgreSQL（Supabase）的存储实现
 type PgStore struct {
 	db *sql.DB

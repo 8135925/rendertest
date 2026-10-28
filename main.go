@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -102,22 +101,15 @@ func (s *app) notesDelete(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
 
-// Store 存储接口：FileStore 与 PgStore 均实现该接口
-type Store interface {
-	List() ([]Note, error)
-	Add(content string) (Note, error)
-	Delete(id string) (bool, error)
-}
-
 type app struct {
-	store Store
+	store *PgStore
 }
 
-// loadDotEnv 极简 .env 加载器（不覆盖已存在的环境变量）
+// loadDotEnv 极简 .env 加载器，本地开发时从 .env 文件读取环境变量
 func loadDotEnv(path string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return
+		return // 文件不存在就跳过（Render 上靠控制台配置环境变量）
 	}
 	for _, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(line)
@@ -138,24 +130,17 @@ func loadDotEnv(path string) {
 func main() {
 	loadDotEnv(".env")
 
-	var store Store
-	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
-		pg, err := NewPgStore(dsn)
-		if err != nil {
-			log.Fatalf("连接 PostgreSQL 失败: %v", err)
-		}
-		defer pg.Close()
-		store = pg
-		log.Println("数据存储：PostgreSQL (Supabase)")
-	} else {
-		fs, err := NewFileStore(filepath.Join("data", "notes.json"))
-		if err != nil {
-			log.Fatalf("初始化存储失败: %v", err)
-		}
-		store = fs
-		log.Println("数据存储：本地 JSON 文件（未配置 DATABASE_URL）")
+	// 连接数据库（连接串从环境变量读取，不写死在代码里）
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("未配置 DATABASE_URL 环境变量，无法连接数据库")
 	}
-	a := &app{store: store}
+	pg, err := NewPgStore(dsn)
+	if err != nil {
+		log.Fatalf("连接 PostgreSQL 失败: %v", err)
+	}
+	defer pg.Close()
+	a := &app{store: pg}
 
 	mux := http.NewServeMux()
 
