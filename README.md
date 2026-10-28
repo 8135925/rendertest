@@ -31,10 +31,14 @@ rendertest/
 
 ## 数据存储说明
 
-实验数据使用极简 JSON 文件存储（`data/notes.json`），零外部依赖。
+支持两种存储后端，通过环境变量 `DATABASE_URL` 自动切换：
 
-> ⚠️ Render 免费实例磁盘是临时的：实例休眠（15 分钟无流量）或重新部署后数据会清空。
-> 若需持久保存，后续可换 PostgreSQL（Neon/Supabase 免费版）或付费 Persistent Disk。
+- **配置了 `DATABASE_URL`** → PostgreSQL（Supabase），启动时自动建表，数据持久保存
+- **未配置** → 本地 JSON 文件（`data/notes.json`），适合无数据库的快速实验
+
+> 本地开发：在项目根目录创建 `.env` 文件写入 `DATABASE_URL=...`（已 gitignore）。
+> Render 部署：在服务设置的 Environment 中添加 `DATABASE_URL`。
+> Supabase 连接串请使用 **Session/Transaction Pooler** 地址（`*.pooler.supabase.com`），直连地址（`db.xxx.supabase.co`）仅支持 IPv6。
 
 ## 本地运行
 
