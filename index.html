@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的云端服务实验室</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        h1 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .status-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        .status-item span:first-child {
+            color: #64748b;
+        }
+        .status-ok {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .status-wait {
+            color: #eab308;
+            font-weight: bold;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="badge">● 部署成功</div>
+    <h1>Hello, World! 🚀</h1>
+    <p>恭喜！你的网页已经成功部署到公网，域名解析与 SSL 证书已正常生效。</p>
+
+    <div class="status-box">
+        <div class="status-item">
+            <span>当前前端页面：</span>
+            <span class="status-ok">✔ 运行正常 (Active)</span>
+        </div>
+        <div class="status-item">
+            <span>Go 语言后端：</span>
+            <span class="status-wait">⏳ 待接入 (Step 2)</span>
+        </div>
+        <div class="status-item">
+            <span>Redis 缓存：</span>
+            <span class="status-wait">⏳ 待接入 (Step 3)</span>
+        </div>
+    </div>
+
+    <button class="btn" onclick="testClick()">测试交互按钮</button>
+</div>
+
+<script>
+    function testClick() {
+        alert("恭喜！客户端 JavaScript 运行正常。后续可以从这里调用你的 Go 接口！");
+    }
+</script>
+
+</body>
+</html>
