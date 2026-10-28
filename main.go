@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -59,13 +60,67 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// notesList GET /api/notes — 列出全部笔记
+func (s *app) notesList(w http.ResponseWriter, r *http.Request) {
+	notes, err := s.store.List()
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, notes)
+}
+
+// notesAdd POST /api/notes — 新增笔记
+func (s *app) notesAdd(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Content == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "content 不能为空"})
+		return
+	}
+	note, err := s.store.Add(req.Content)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusCreated, note)
+}
+
+// notesDelete DELETE /api/notes/{id} — 删除笔记
+func (s *app) notesDelete(w http.ResponseWriter, r *http.Request) {
+	found, err := s.store.Delete(r.PathValue("id"))
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if !found {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "笔记不存在"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
+}
+
+type app struct {
+	store *FileStore
+}
+
 func main() {
+	store, err := NewFileStore(filepath.Join("data", "notes.json"))
+	if err != nil {
+		log.Fatalf("初始化存储失败: %v", err)
+	}
+	a := &app{store: store}
+
 	mux := http.NewServeMux()
 
 	// API 路由
 	mux.HandleFunc("GET /api/health", healthCheck)
 	mux.HandleFunc("GET /api/info", serverInfo)
 	mux.HandleFunc("POST /api/echo", echo)
+	mux.HandleFunc("GET /api/notes", a.notesList)
+	mux.HandleFunc("POST /api/notes", a.notesAdd)
+	mux.HandleFunc("DELETE /api/notes/{id}", a.notesDelete)
 
 	// 静态文件：托管前端 HTML（默认返回 index.html）
 	mux.Handle("/", http.FileServer(http.Dir(".")))

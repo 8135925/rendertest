@@ -96,6 +96,40 @@
             background: #2563eb;
             transform: translateY(-2px);
         }
+        .note-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #f8fafc;
+            font-size: 14px;
+            outline: none;
+        }
+        .note-input:focus {
+            border-color: #3b82f6;
+        }
+        .note-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .note-item:last-child {
+            margin-bottom: 0;
+        }
+        .note-del {
+            background: none;
+            border: none;
+            color: #f87171;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 4px;
+        }
+        .note-del:hover {
+            color: #ef4444;
+        }
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -128,6 +162,16 @@
     <button class="btn" onclick="testClick()">测试交互按钮</button>
     <button class="btn" style="margin-top: 12px; background: #10b981;" onclick="callBackend()">调用 Go 后端接口</button>
     <div class="status-box" id="api-result" style="display: none; margin-top: 24px;"></div>
+
+    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 28px 0;">
+
+    <h1 style="font-size: 18px; margin-bottom: 4px;">实验数据（JSON 文件存储）</h1>
+    <p style="margin-bottom: 16px; font-size: 13px;">数据写入服务器 data/notes.json。注意：Render 免费实例重启/重新部署后数据会清空。</p>
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input id="note-input" class="note-input" type="text" placeholder="输入实验数据，回车或点添加" onkeydown="if(event.key==='Enter')addNote()">
+        <button class="btn" style="width: auto; margin: 0; padding: 10px 20px;" onclick="addNote()">添加</button>
+    </div>
+    <div class="status-box" id="notes-list"><span class="status-wait">⏳ 加载中...</span></div>
 </div>
 
 <script>
@@ -166,6 +210,57 @@
             box.innerHTML = `<span class="status-wait">✖ 后端请求失败: ${err.message}（请确认 Go 服务已启动）</span>`;
         }
     }
+
+    // ===== 实验数据（JSON 文件存储） =====
+
+    async function loadNotes() {
+        const list = document.getElementById('notes-list');
+        try {
+            const res = await fetch('/api/notes');
+            const notes = await res.json();
+            if (!notes.length) {
+                list.innerHTML = '<span style="color:#64748b;">暂无数据，添加一条试试。</span>';
+                return;
+            }
+            list.innerHTML = notes.map(n => `
+                <div class="note-item">
+                    <span style="color:#f8fafc;">${escapeHtml(n.content)}</span>
+                    <span style="display:flex;align-items:center;gap:8px;">
+                        <span style="color:#64748b;font-size:12px;">${new Date(n.created_at).toLocaleString()}</span>
+                        <button class="note-del" onclick="delNote('${n.id}')">删除</button>
+                    </span>
+                </div>
+            `).join('');
+        } catch (err) {
+            list.innerHTML = `<span class="status-wait">✖ 加载失败: ${err.message}</span>`;
+        }
+    }
+
+    async function addNote() {
+        const input = document.getElementById('note-input');
+        const content = input.value.trim();
+        if (!content) return;
+        const res = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        });
+        if (res.ok) {
+            input.value = '';
+            loadNotes();
+        }
+    }
+
+    async function delNote(id) {
+        await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+        loadNotes();
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    loadNotes();
 </script>
 
 </body>

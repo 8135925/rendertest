@@ -25,6 +25,16 @@ rendertest/
 | GET  | `/api/health` | 健康检查（Render Health Check Path） |
 | GET  | `/api/info`   | 服务端环境信息 |
 | POST | `/api/echo`   | 回显测试，body: `{"message": "xxx"}` |
+| GET  | `/api/notes`  | 列出实验数据 |
+| POST | `/api/notes`  | 新增，body: `{"content": "xxx"}` |
+| DELETE | `/api/notes/{id}` | 删除一条 |
+
+## 数据存储说明
+
+实验数据使用极简 JSON 文件存储（`data/notes.json`），零外部依赖。
+
+> ⚠️ Render 免费实例磁盘是临时的：实例休眠（15 分钟无流量）或重新部署后数据会清空。
+> 若需持久保存，后续可换 PostgreSQL（Neon/Supabase 免费版）或付费 Persistent Disk。
 
 ## 本地运行
 

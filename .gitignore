@@ -5,3 +5,6 @@ app.exe
 
 # 测试临时文件
 _test_body.json
+
+# 实验数据文件（每次部署会清空，不入库）
+data/
