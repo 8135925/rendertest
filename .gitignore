@@ -1,0 +1,7 @@
+# Go 编译产物
+app
+app.exe
+*.exe
+
+# 测试临时文件
+_test_body.json

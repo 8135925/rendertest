@@ -1,0 +1,13 @@
+# Render 部署蓝图 (Blueprint)
+# 在 Render 控制台选择 "New + -> Blueprint" 并关联本仓库即可自动创建服务
+services:
+  - type: web
+    name: rendertest
+    runtime: go
+    plan: free
+    buildCommand: go build -o app .
+    startCommand: ./app
+    healthCheckPath: /api/health
+    envVars:
+      - key: GO_VERSION
+        value: 1.26.4

@@ -126,11 +126,45 @@
     </div>
 
     <button class="btn" onclick="testClick()">测试交互按钮</button>
+    <button class="btn" style="margin-top: 12px; background: #10b981;" onclick="callBackend()">调用 Go 后端接口</button>
+    <div class="status-box" id="api-result" style="display: none; margin-top: 24px;"></div>
 </div>
 
 <script>
     function testClick() {
-        alert("恭喜！客户端 JavaScript 运行正常。后续可以从这里调用你的 Go 接口！");
+        alert("客户端 JavaScript 运行正常！");
+    }
+
+    // 调用 Go 后端健康检查接口
+    async function callBackend() {
+        const box = document.getElementById('api-result');
+        box.style.display = 'block';
+        box.innerHTML = '<span class="status-wait">⏳ 正在请求后端接口...</span>';
+        try {
+            const res = await fetch('/api/health');
+            const data = await res.json();
+            // 顺便演示 POST 请求
+            const echoRes = await fetch('/api/echo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'Hello Go!' })
+            });
+            const echoData = await echoRes.json();
+
+            document.querySelector('.status-item:nth-child(2) span:last-child').outerHTML =
+                '<span class="status-ok">✔ 运行正常 (Active)</span>';
+            document.querySelector('.badge').textContent = '● 全栈部署成功';
+
+            box.innerHTML = `
+                <div class="status-item"><span>接口状态：</span><span class="status-ok">${data.status}</span></div>
+                <div class="status-item"><span>服务名称：</span><span class="status-ok">${data.service}</span></div>
+                <div class="status-item"><span>服务端时间：</span><span class="status-ok">${data.time}</span></div>
+                <div class="status-item"><span>运行时长：</span><span class="status-ok">${data.uptime}</span></div>
+                <div class="status-item"><span>POST 回显测试：</span><span class="status-ok">${echoData.echo} (来自 ${echoData.from})</span></div>
+            `;
+        } catch (err) {
+            box.innerHTML = `<span class="status-wait">✖ 后端请求失败: ${err.message}（请确认 Go 服务已启动）</span>`;
+        }
     }
 </script>
 
